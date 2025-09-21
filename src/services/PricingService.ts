@@ -16,6 +16,6 @@ export class PricingService {
       }
     }
 
-    return totalDiscount; // ← in cents, because offers return cents
+    return totalDiscount; 
   }
 }
