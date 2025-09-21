@@ -1,7 +1,7 @@
 export interface Product {
   code: string;
   name: string;
-  price: number;
+  priceInCents: number; // ← CHANGED: store price in cents
 }
 
 export interface ProductCatalog {

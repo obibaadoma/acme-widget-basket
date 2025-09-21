@@ -33,17 +33,18 @@ export class Basket {
       quantity: item.quantity,
     }));
 
-    const subtotal = itemized.reduce(
-      (sum, { product, quantity }) => sum + product.price * quantity,
+    // All calculations in cents (integers)
+    const subtotalInCents = itemized.reduce(
+      (sum, { product, quantity }) => sum + product.priceInCents * quantity,
       0
     );
 
-    const discount = this.pricingService.calculateDiscount(itemized);
-    const delivery = this.deliveryRule.costForSubtotal(subtotal - discount);
+    const discountInCents = this.pricingService.calculateDiscount(itemized);
+    const deliveryInCents = this.deliveryRule.costForSubtotal(subtotalInCents - discountInCents);
 
-    const total = subtotal - discount + delivery;
+    const totalInCents = subtotalInCents - discountInCents + deliveryInCents;
 
-    // Round to 2 decimal places to avoid floating point errors
-    return Math.round(total * 100) / 100;
+    // Truncate to 2 decimal places (no rounding up)
+    return Math.floor(totalInCents) / 100;
   }
 }
