@@ -10,8 +10,7 @@
     "coverage": "vitest run --coverage",
     "lint": "eslint . --ext .ts",
     "format": "prettier --write \"src/**/*.ts\" \"tests/**/*.ts\"",
-    "lint:fix": "eslint . --ext .ts --fix",
-    "prepare": "husky install"
+    "lint:fix": "eslint . --ext .ts --fix"
   },
   "keywords": [],
   "author": "",
