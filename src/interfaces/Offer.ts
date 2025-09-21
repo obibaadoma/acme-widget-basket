@@ -1,4 +1,4 @@
-import { Product } from "./ProductCatalog";
+import { Product } from './ProductCatalog';
 
 export interface Offer {
   appliesToProductCode: string;

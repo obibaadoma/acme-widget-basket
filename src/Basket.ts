@@ -1,8 +1,8 @@
-import { ProductCatalog } from "./interfaces/ProductCatalog";
-import { DeliveryRule } from "./interfaces/DeliveryRule";
-import { Offer } from "./interfaces/Offer";
-import { PricingService } from "./services/PricingService";
-import { BasketItem } from "./models/BasketItem";
+import { ProductCatalog } from './interfaces/ProductCatalog';
+import { DeliveryRule } from './interfaces/DeliveryRule';
+import { Offer } from './interfaces/Offer';
+import { PricingService } from './services/PricingService';
+import { BasketItem } from './models/BasketItem';
 
 export class Basket {
   private items: Map<string, BasketItem> = new Map();

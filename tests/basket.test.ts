@@ -44,7 +44,7 @@ describe('Basket totals (integration)', () => {
     b.add('R01');
     expect(b.total()).toBe(98.27);
   });
-  
+
   it('throws error when adding invalid product code', () => {
     const b = makeBasket();
     expect(() => b.add('INVALID')).toThrow('Product with code INVALID not found');

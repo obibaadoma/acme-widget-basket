@@ -1,5 +1,5 @@
-import { Product } from "../interfaces/ProductCatalog";
-import { Offer } from "../interfaces/Offer";
+import { Product } from '../interfaces/ProductCatalog';
+import { Offer } from '../interfaces/Offer';
 
 export class PricingService {
   constructor(private offers: Offer[]) {}
@@ -16,6 +16,6 @@ export class PricingService {
       }
     }
 
-    return totalDiscount; 
+    return totalDiscount;
   }
 }
