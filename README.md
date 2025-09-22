@@ -1,59 +1,80 @@
 # 🧺 ACME Widget Basket
 
-A small, focused Node.js + TypeScript project that calculates basket totals for Acme Widget Co using extensible pricing and delivery rules.
+A Node.js + TypeScript project that calculates basket totals for Acme Widget using extensible pricing and delivery rules. This project demonstrates a clean separation of concerns, the strategy pattern for offers, and precise financial calculations using integer cents.
 
-This project demonstrates clean separation of concerns, the strategy pattern for offers, and precise financial calculations using integer cents.
+## Badges
 
----
+[](https://github.com/obibaadoma/acme-widget-basket/actions)
+
+-----
+
+## TL;DR
+
+  - **Install & Run:** `npm install && npm run dev`
+  - **Example Totals:** The four example baskets will print `PASS` with totals of `$37.85`, `$54.37`, `$60.85`, and `$98.27`.
+  - **Core Idea:** Business rules are implemented with small, testable services and strategy objects.
+
+-----
 
 ## Table of Contents
 
-- [Features](#features)
-- [Requirements](#requirements)
-- [Quick Start](#quick-start)
-- [Usage Example](#usage-example)
-- [Products & Offers](#products--offers)
-- [Delivery Rules](#delivery-rules)
-- [Project Structure](#project-structure)
-- [Design Notes](#design-notes)
-- [For Reviewers](#for-reviewers)
-- [Assumptions & Edge Cases](#assumptions--edge-cases)
-- [Complexity](#complexity)
-- [Future Enhancements](#future-enhancements)
-- [Testing](#testing)
-- [Extending](#extending)
-- [Scripts](#scripts)
-- [License](#license)
+- [🧺 ACME Widget Basket](#-acme-widget-basket)
+  - [Badges](#badges)
+  - [TL;DR](#tldr)
+  - [Table of Contents](#table-of-contents)
+  - [Features](#features)
+  - [Requirements](#requirements)
+  - [Quick Start](#quick-start)
+  - [Usage Example](#usage-example)
+    - [Products \& Offers](#products--offers)
+    - [Delivery Rules](#delivery-rules)
+  - [Project Structure](#project-structure)
+  - [Development](#development)
+    - [Available Scripts](#available-scripts)
+    - [Extending the Project](#extending-the-project)
+    - [Design Notes](#design-notes)
+    - [Assumptions \& Edge Cases](#assumptions--edge-cases)
+  - [Complexity](#complexity)
+  - [Future Enhancements](#future-enhancements)
+  - [License](#license)
+  - [This project is licensed under the **MIT License**.](#this-project-is-licensed-under-the-mit-license)
+  - [Author](#author)
 
----
+-----
 
 ## Features
 
-- Precise pricing in integer cents (no floating-point rounding errors)
-- Pluggable offer strategies via the `Offer` interface
-- Configurable delivery pricing via the `DeliveryRule` interface
-- Simple `ProductCatalog` abstraction for product lookup
-- Minimal, dependency-light TypeScript codebase
+  - **Precise Calculations:** All monetary math is done in integer cents to avoid floating-point errors.
+  - **Pluggable Offers:** Easily add new promotions by implementing the `Offer` interface (Strategy Pattern).
+  - **Configurable Delivery:** Delivery pricing is handled by a swappable `DeliveryRule` interface.
+  - **Simple Catalog:** A straightforward `ProductCatalog` abstraction for easy product lookups.
+  - **Minimalist:** A dependency-light TypeScript codebase focused on core logic.
+
+-----
 
 ## Requirements
 
-- Node.js 18+ recommended
-- npm 9+
+  - **Node.js:** v18+ recommended
+  - **npm:** v9+ recommended
+
+-----
 
 ## Quick Start
 
-Install dependencies and run the sample test runner in `src/index.ts`:
+Install dependencies and run the sample runner located in `src/index.ts`:
 
 ```bash
 npm install
 npm run dev
 ```
 
-You should see four scenarios printed with PASS statuses (as coded in `src/index.ts`).
+You should see four scenarios printed to the console with `PASS` statuses.
+
+-----
 
 ## Usage Example
 
-The following matches the example logic in `src/index.ts` and demonstrates how to wire up the components:
+The following example demonstrates how to wire up the components to calculate a basket's total.
 
 ```ts
 import { Basket } from "./src/Basket";
@@ -62,112 +83,99 @@ import { StandardDeliveryRule } from "./src/services/DeliveryService";
 import { PricingService } from "./src/services/PricingService";
 import { BuyOneGetHalfPrice } from "./src/strategies/BuyOneGetHalfPrice";
 
+// 1. Set up services and rules
 const catalog = new SimpleProductCatalog();
 const deliveryRule = new StandardDeliveryRule();
 const offers = [new BuyOneGetHalfPrice("R01")];
 const pricing = new PricingService(offers);
 
+// 2. Create and fill the basket
 const basket = new Basket(catalog, deliveryRule, pricing);
 basket.add("B01");
 basket.add("G01");
 
+// 3. Get the final total
 console.log(`Total: $${basket.total().toFixed(2)}`);
 ```
 
-## Products & Offers
+-----
 
-Available products (from `src/catalogs/SimpleProductCatalog.ts`):
+### Products & Offers
 
-- `R01` — Red Widget — $32.95
-- `G01` — Green Widget — $24.95
-- `B01` — Blue Widget — $7.95
+The `SimpleProductCatalog` provides the following products:
 
-Current offer strategy (in `src/strategies/BuyOneGetHalfPrice.ts`):
+  - `R01` — Red Widget — `$32.95`
+  - `G01` — Green Widget — `$24.95`
+  - `B01` — Blue Widget — `$7.95`
 
-- Buy One Get One Half Price on `R01` (every second `R01` is 50% off)
+The current offer strategy is **Buy One Red Widget, Get the Second Half Price**. This is implemented in `src/strategies/BuyOneGetHalfPrice.ts`. The `PricingService` applies all relevant offers to the basket to calculate the total discount.
 
-How offers are applied (see `src/services/PricingService.ts`): `PricingService` looks up applicable `Offer`s per product and sums the discounts (in cents) returned by each offer for the quantities in the basket.
+### Delivery Rules
 
-## Delivery Rules
+Delivery charges are calculated based on the **post-discount subtotal**:
 
-From `src/services/DeliveryService.ts` (`StandardDeliveryRule`):
+  - Subtotal **\< $50** → `$4.95` delivery
+  - Subtotal **≥ $50 and \< $90** → `$2.95` delivery
+  - Subtotal **≥ $90** → Free delivery
 
-- Subtotal < $50 → $4.95 delivery
-- $50 ≤ Subtotal < $90 → $2.95 delivery
-- Subtotal ≥ $90 → Free delivery
-
-Delivery is computed on the subtotal after offers/discounts have been applied.
+-----
 
 ## Project Structure
 
 ```
 src/
-├─ Basket.ts                 # Orchestrates item totals, discounts, and delivery
+├─ Basket.ts                 # Orchestrates totals, discounts, and delivery.
 ├─ catalogs/
-│  └─ SimpleProductCatalog.ts# In-memory product catalog
+│  └─ SimpleProductCatalog.ts # In-memory product catalog implementation.
 ├─ interfaces/
-│  ├─ DeliveryRule.ts        # Delivery cost contract
-│  ├─ Offer.ts               # Offer contract (returns discount in cents)
-│  └─ ProductCatalog.ts      # Product lookup contract
+│  ├─ DeliveryRule.ts        # Contract for a delivery cost rule.
+│  ├─ Offer.ts               # Contract for an offer (returns discount in cents).
+│  └─ ProductCatalog.ts      # Contract for a product lookup service.
 ├─ models/
-│  └─ BasketItem.ts          # Tracks product + quantity
+│  └─ BasketItem.ts          # Tracks product code and quantity.
 ├─ services/
-│  ├─ DeliveryService.ts     # Standard delivery rule implementation
-│  └─ PricingService.ts      # Applies offers and sums discounts
+│  ├─ DeliveryService.ts     # Standard delivery rule implementation.
+│  └─ PricingService.ts      # Applies offers and sums discounts.
 └─ strategies/
-   └─ BuyOneGetHalfPrice.ts  # “Every second item is half price” for a product
+   └─ BuyOneGetHalfPrice.ts  # "Buy one, get one half price" offer logic.
 ```
 
-## Testing
+-----
 
-This project includes a Vitest suite covering the basket totals, delivery rule, and offer strategy.
+## Development
 
-Install dependencies (if you haven’t already), then run:
+The project uses ESLint for linting and Prettier for formatting. Vitest is used for testing.
 
-```bash
-npm install
-npm test            # run tests once (CI-friendly)
-npm run test:watch  # watch mode for local development
-npm run coverage    # generate coverage report
-```
+### Available Scripts
 
-Test files are located in `tests/`:
+  - `npm run dev`: Runs the demo script (`src/index.ts`).
+  - `npm test`: Runs the test suite once.
+  - `npm run test:watch`: Runs tests in watch mode for active development.
+  - `npm run coverage`: Generates a test coverage report.
+  - `npm run lint`: Lints the codebase for errors.
+  - `npm run lint:fix`: Automatically fixes linting errors.
+  - `npm run format`: Formats code using Prettier.
 
-- `tests/basket.test.ts` — integration scenarios matching `src/index.ts`
-- `tests/delivery.test.ts` — unit tests for `StandardDeliveryRule`
-- `tests/offer.test.ts` — unit tests for `BuyOneGetHalfPrice`
+### Extending the Project
 
-## Design Notes
+  - **New Products:** Implement the `ProductCatalog` interface (e.g., to fetch from a database or API calls).
+  - **New Offers:** Create a new class that implements the `Offer` interface and add it to the `PricingService`.
+  - **New Delivery Rules:** Implement the `DeliveryRule` interface and pass it to the `Basket` constructor.
 
-- All monetary math is done in integer cents for accuracy. Totals are converted to dollars at the end: `Math.floor(totalInCents) / 100` to prevent rounding up.
-- `BuyOneGetHalfPrice` uses `Math.round(product.priceInCents / 2)` to correctly handle odd-cent halves.
-- The basket maintains an internal `Map<string, BasketItem>` keyed by product code for efficient quantity tracking.
+-----
 
-## For Reviewers
+### Design Notes
 
-- Purposefully minimal dependencies; all business logic is in `src/` with clear seams (`interfaces/`, `services/`, `strategies/`).
-- Deterministic money math using integer cents throughout. Final dollar value uses `Math.floor(totalInCents) / 100` to avoid rounding up, matching provided expected totals in `src/index.ts`.
-- Offer logic is isolated behind the `Offer` interface; adding promotions does not require touching the `Basket`.
-- Delivery calculation depends on post-discount subtotal as a realistic real-world rule.
-- Readability: small files, explicit names, and a simple `src/index.ts` runner that prints PASS/FAIL for four scenarios.
+  - **Integer Cents:** All monetary calculations use integer cents to ensure accuracy and avoid floating-point rounding issues. Dollar conversion only happens at the final output.
+  - **Truncation:** The final total is truncated, not rounded (e.g., `37.857` becomes `37.85`), to match the provided test expectations. This is done via `Math.floor(totalInCents) / 100`.
+  - **Offer Isolation:** Offer logic is fully encapsulated behind the `Offer` interface. Adding or changing promotions does not require modifying the `Basket` or other services.
+  - **Efficiency:** The basket uses an internal `Map<string, BasketItem>` for efficient O(1) lookups and quantity updates.
 
-What to look at first:
+### Assumptions & Edge Cases
 
-- `src/Basket.ts` for orchestration and precise total flow (subtotal → discounts → delivery → total)
-- `src/strategies/BuyOneGetHalfPrice.ts` for discount calculation and integer handling
-- `src/services/PricingService.ts` for how offers are discovered and summed
-
-Trade-offs:
-
-- No persistence or UI to keep the scope focused on pricing rules.
-- Uses a single active offer per product in the example; composing multiple offers per product would be straightforward but out of scope for the assignment.
-
-## Assumptions & Edge Cases
-
-- Product codes are validated via `ProductCatalog`; adding an unknown code throws a clear error from `Basket.add`.
-- Offer is applied per product family (code-based) and only when quantity threshold is met (e.g., at least two items for half-price logic).
-- Totals are truncated (not rounded up) to match the test expectations in `src/index.ts`.
-- Delivery is computed on the discounted subtotal.
+  - Product codes are validated by the `ProductCatalog`. Adding an unknown code will throw an error.
+  - The "Buy One Get One Half Price" offer is applied for every two items of the same product code.
+  - Delivery charges are always computed on the discounted subtotal.
 
 ## Complexity
 
@@ -176,29 +184,28 @@ Trade-offs:
   - Offer lookup per item: O(M) naive (can be O(1) with a map); in this code M is tiny and lookup is a simple `find`.
   - Overall per-total calculation: O(N + M)
 
+-----
+
 ## Future Enhancements
 
-- Multiple offers per product with composition rules (e.g., max discount wins, stackable vs exclusive).
-- Currency/locale abstraction and money type wrapper to centralize formatting and conversions.
-- Config-driven `DeliveryRule` thresholds and fees.
-- Unit tests with a proper test runner (e.g., Vitest/Jest) in addition to the sample runner in `src/index.ts`.
-- Additional strategies (e.g., bulk discounts, spend thresholds, coupon codes).
+  - **Composite Offers:** Support applying multiple offers to a single product with rules (e.g., "max discount wins," stackable vs. exclusive).
+  - **Money Type:** Introduce a dedicated `Money` class to encapsulate currency, formatting, and conversions.
+  - **Configuration-Driven Rules:** Load delivery thresholds and fees from a configuration file instead of hardcoding them.
+  - **More Offer Strategies:** Implement additional offer types like bulk discounts, "spend X get Y free," or coupon codes.
 
-## Extending
-
-- New products: implement or extend `ProductCatalog` (e.g., fetch from a DB or API)
-- New offers: add a class implementing `Offer` and include it in `PricingService`
-- New delivery rules: implement `DeliveryRule` and pass it to the `Basket` constructor
-
-## Scripts
-
-Defined in `package.json`:
-
-- `npm run dev` → runs `ts-node src/index.ts`
-- `npm run demo` → alias of the same sample runner
-- `npm test` → alias of the same command for convenience
-  - With Vitest: runs the Vitest suite (see Testing section)
+-----
 
 ## License
 
-ISC License. See [LICENSE](./LICENSE).
+This project is licensed under the **MIT License**.
+-----
+
+## Author
+
+👤 **Derek Akrasi Konadu**
+
+A full-stack developer passionate about building clean, scalable applications.
+
+  - **GitHub:** [@obibaadoma](https://github.com/obibaadoma)
+  - **LinkedIn:** [derek-akrasi-konadu](https://www.linkedin.com/in/derek-akrasi-konadu-187453151/)
+  - **Email:** [akrasikonadu@yahoo.com](mailto:akrasikonadu@yahoo.com)

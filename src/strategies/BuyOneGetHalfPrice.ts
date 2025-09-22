@@ -10,7 +10,7 @@ export class BuyOneGetHalfPrice implements Offer {
     const product = items.find(p => p.code === this.appliesToProductCode);
     if (!product) return 0;
 
-    // Calculate how many items get the discount (every second item)
+    // Calculate how many items get the discount
     const discountedItems = Math.floor(quantity / 2);
 
     // Calculate the discount amount (50% of the product price)
