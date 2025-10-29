@@ -10,7 +10,7 @@ export class PricingService {
     for (const { product, quantity } of items) {
       const applicableOffer = this.offers.find(
         offer => offer.appliesToProductCode === product.code
-      );
+      );  
       if (applicableOffer) {
         totalDiscount += applicableOffer.apply([product], quantity);
       }
